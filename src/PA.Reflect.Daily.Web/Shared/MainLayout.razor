@@ -1,0 +1,46 @@
+﻿@using Blazorise
+@using Microsoft.AspNetCore.Identity;
+@using PA.Reflect.Daily.Core.ProjectAggregate;
+@using PA.Reflect.Daily.Web.Interfaces;
+@inherits LayoutComponentBase
+@inject IUserService UserService
+
+<PageTitle>Reflect daily</PageTitle>
+
+<div id="main" class="flex flex-col h-screen">
+    <div class="w-full p-4 flex justify-center text-gray-600 gap-4">
+        
+        <NavLink href="/" class="hover:text-orange-500" Match="NavLinkMatch.All">
+            <Icon Name="IconName.CalendarDay" IconSize="IconSize.Large" />
+        </NavLink>
+        <NavLink href="/" class="hover:text-orange-500" Match="NavLinkMatch.All">
+            <Icon Name="IconName.User" IconSize="IconSize.Large" />
+        </NavLink>
+        <NavLink href="/" class="hover:text-orange-500" Match="NavLinkMatch.All">
+            <Icon Name="@("fa-brands fa-github")" IconSize="IconSize.Large" />
+        </NavLink>
+    </div>
+
+    <main class="flex-grow px-4 py-2 overflow-y-auto">
+        <div class="flex flex-row items-center justify-center">
+            <CascadingValue Value="@User">
+                @Body
+            </CascadingValue>
+        </div>
+    </main>
+</div>
+
+<style>
+    #main{
+        padding-top: 3rem;
+    }
+</style>
+
+@code {
+    protected User User { get; set; } = new() { Id = default };
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await UserService.GetCurrentUserAsync();
+    }
+}

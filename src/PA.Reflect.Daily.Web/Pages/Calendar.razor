@@ -1,0 +1,125 @@
+﻿@page "/"
+@using System.Globalization;
+@using Blazorise
+@using PA.Reflect.Daily.Core.Aggregates;
+@using PA.Reflect.Daily.Core.ProjectAggregate;
+@using PA.Reflect.Daily.Web.Interfaces;
+@inject IUserService UserService
+@inject IUnitOfWork UnitOfWork
+
+<style>
+    tr {
+        line-height: 50px;
+    }
+</style>
+
+<div class="lg:m-12 p-6 shadow-md rounded-lg flex flex-col items-center justify-center w-full lg:w-2/4">
+    <div class="flex flex-row items-center justify-center gap-4 text-gray-500">
+        <button @onclick="PreviousYear">
+            <Icon Name="IconName.ArrowLeft" />
+        </button>
+        <span class="font-bold">@currentYear</span>
+        <button @onclick="NextYear">
+            <Icon Name="IconName.ArrowRight" />
+        </button>
+    </div>
+
+    <div class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-12 gap-4 border-b-2 my-2 mx-4">
+        @foreach (var month in months)
+        {
+            <button @onclick="@(() => SetMonth(month))" class="@(month == currentMonth ? "text-orange-600 font-bold" : "text-gray-500")">@DateTimeFormatInfo.CurrentInfo.GetMonthName(month).Substring(0,3)</button>
+        }
+    </div>
+
+    <table class="w-full">
+        <thead class="border-b-16 border-transparent text-center">
+            <tr>
+                <th class="uppercase text-gray-500 font-extrabold">@DateTimeFormatInfo.CurrentInfo.GetDayName(DayOfWeek.Sunday).Substring(0,3)</th>
+                <th class="uppercase text-gray-500 font-extrabold">@DateTimeFormatInfo.CurrentInfo.GetDayName(DayOfWeek.Monday).Substring(0,3)</th>
+                <th class="uppercase text-gray-500 font-extrabold">@DateTimeFormatInfo.CurrentInfo.GetDayName(DayOfWeek.Tuesday).Substring(0,3)</th>
+                <th class="uppercase text-gray-500 font-extrabold">@DateTimeFormatInfo.CurrentInfo.GetDayName(DayOfWeek.Wednesday).Substring(0,3)</th>
+                <th class="uppercase text-gray-500 font-extrabold">@DateTimeFormatInfo.CurrentInfo.GetDayName(DayOfWeek.Thursday).Substring(0,3)</th>
+                <th class="uppercase text-gray-500 font-extrabold">@DateTimeFormatInfo.CurrentInfo.GetDayName(DayOfWeek.Friday).Substring(0,3)</th>
+                <th class="uppercase text-gray-500 font-extrabold">@DateTimeFormatInfo.CurrentInfo.GetDayName(DayOfWeek.Saturday).Substring(0,3)</th>
+            </tr>
+        </thead>
+        <tbody class="text-center">
+            @for (int week = 0; week < WeeksInMonth; week++)
+            {
+                <tr class="">
+                    @for (int day = 0; day < 7; day++)
+                    {
+                        var date = StartOfMonth.AddDays((week * 7) + day - ((int)StartOfMonth.DayOfWeek - (int)DayOfWeek.Sunday));
+                        var isToday = date.Date == DateTime.Today;
+                        var isCurrentWeek = GetWeekOfYear(date) == GetWeekOfYear(DateTime.Today) && date.Year == DateTime.Today.Year;
+
+                        <td class="@(date.Month == StartOfMonth.Month ? "" : "text-gray-300") @(isToday ? "text-orange-500 font-bold" : "") @(isCurrentWeek ? "current-week" : "")">
+                            <a href="@("/reflections/" + date.ToString("yyyy-MM-dd"))" class="hover:text-orange-600 relative">
+                                @if (date.Day < 10)
+                                {
+                                    @("0")
+                                }
+                                @date.Day
+                                @if(reflections.Any(c => c.Date.Equals(DateOnly.FromDateTime(date))))
+                                {
+                                    <div class="absolute top-0 left-6 h-1.5 w-1.5 bg-green-600 rounded-full"></div>
+                                }
+                            </a>
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    private DateTime StartOfMonth { get; set; }
+
+    private int WeeksInMonth =>
+        (int)Math.Ceiling((StartOfMonth.AddMonths(1) - StartOfMonth.AddDays(-(int)StartOfMonth.DayOfWeek)).TotalDays / 7);
+
+    private List<Reflection> reflections = new();
+
+    [CascadingParameter] public User User { get; set; } = new();
+
+    private int[] months = new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
+    private int currentMonth = DateTime.Now.Month;
+    private int currentYear = DateTime.Now.Year;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        StartOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+
+        reflections = await UnitOfWork.ReflectionRepository.ListAsync(new ReflectionsByUserId(User.Id));
+
+        StateHasChanged();
+        return;
+    }
+
+    private void PreviousYear()
+    {
+        StartOfMonth = StartOfMonth.AddYears(-1);
+        currentMonth = StartOfMonth.Month;
+        currentYear = StartOfMonth.Year;
+    }
+
+    private void NextYear()
+    {
+        StartOfMonth = StartOfMonth.AddYears(1);
+        currentMonth = StartOfMonth.Month;
+        currentYear = StartOfMonth.Year;
+    }
+
+    private void SetMonth(int month)
+    {
+        StartOfMonth = new DateTime(StartOfMonth.Year, month, 1);
+        currentMonth = StartOfMonth.Month;
+    }
+
+    private int GetWeekOfYear(DateTime dt)
+    {
+        var calendar = CultureInfo.InvariantCulture.Calendar;
+        return calendar.GetWeekOfYear(dt, CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
+    }
+}

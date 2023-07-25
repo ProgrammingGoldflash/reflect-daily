@@ -1,0 +1,155 @@
+﻿@page "/reflections/{Date}"
+@using Blazorise
+@using Blazorise.Markdown
+@using Blazorise.Snackbar
+@using Markdig;
+@using PA.Reflect.Daily.Core.Aggregates;
+@using PA.Reflect.Daily.Core.ProjectAggregate;
+@using PA.Reflect.Daily.Core.Interfaces;
+@using PA.Reflect.Daily.ServiceLayer.Interfaces;
+@inject IReflectionService ReflectionService
+@inject NavigationManager navigationManager
+
+<Snackbar @ref="snackbarPrimary" Color="SnackbarColor.Light">
+    <SnackbarBody Class="text-gray-700 flex flex-row justify-center items-center">
+    <Icon Name="IconName.Check" Class="mr-3"/>
+    <Span>Saved changes</Span>
+  </SnackbarBody>
+</Snackbar>
+
+<Modal @ref="modalRef">
+    <ModalContent Centered>
+        <ModalHeader>
+            <ModalTitle>Delete</ModalTitle>
+        </ModalHeader>
+        <ModalBody>
+            Confirm the deletion
+        </ModalBody>
+        <ModalFooter>
+            <Button Color="Color.Light" Clicked="@CancelModal">Cancel</Button>
+            <Button Color="Color.Danger" Clicked="@Delete" Outline="false">Delete</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+<div class="flex flex-col items-center justify-center w-full gap-4">
+    <div class="flex flex-row items-center justify-center gap-3 text-gray-600">
+
+        @if (isNew)
+        {
+            <Badge Class="bg-orange-400 text-white">New</Badge>
+        }
+        else
+        {
+            <Badge Class="bg-orange-600 text-white">Edit</Badge>
+        }
+
+        <h3>@_dateOnly.ToLongDateString()</h3>
+        <button @onclick="Save">
+            <Icon Name="IconName.Save" />
+        </button>
+        @if (isNew is false)
+        {
+            <button @onclick="OpenModal">
+                <Icon Name="IconName.Delete" />
+            </button>
+        }
+    </div>
+    <div class="w-3/4">
+        <Markdown Value="@note.MarkdownValue" ValueChanged="@OnMarkdownValueChanged" UploadImage="false">
+        </Markdown>
+    </div>
+
+</div>
+
+@code {
+    [Parameter] public string Date { get; set; } = string.Empty;
+
+    [CascadingParameter] public User User { get; set; } = new();
+
+    private DateOnly _dateOnly;
+    private Reflection reflection = new();
+    private Note note = new();
+
+    private Modal modalRef = new();
+    private bool isNew = true;
+
+    private Snackbar snackbarPrimary = new();
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _dateOnly = DateOnly.ParseExact(Date, "yyyy-MM-dd");
+        reflection = new(default, _dateOnly) { Id = default };
+
+        var entity = await ReflectionService.GetReflectionAsync(User.Id, _dateOnly);
+
+        SetReflection(entity);
+
+        StateHasChanged();
+    }
+
+    protected Task<string> PreviewRender(string plainText)
+    {
+        return Task.FromResult(Markdig.Markdown.ToHtml(note.MarkdownValue ?? string.Empty));
+    }
+
+    private void SetReflection(Reflection? entity)
+    {
+        if (entity != null)
+        {
+            reflection = entity;
+            note = reflection.Notes.FirstOrDefault() ?? new();
+            isNew = false;
+        }
+        else
+        {
+            reflection = new Reflection(User.Id, _dateOnly);
+            note = reflection.AddNote("Test");
+        }
+    }
+
+
+    private void OpenModal()
+    {
+        modalRef.Show();
+    }
+
+    private async Task Delete()
+    {
+        await ReflectionService.DeleteReflectionAsync(reflection);
+
+        await modalRef.Hide();
+
+        navigationManager.NavigateTo("/");
+    }
+
+    private async Task Save()
+    {
+        if (isNew)
+        {
+            var entity = await ReflectionService.AddReflectionAsync(reflection);
+
+            SetReflection(entity);
+            StateHasChanged();
+        }
+        else
+        {
+            await ReflectionService.UpdateReflectionAsync(reflection);
+        }
+
+        await snackbarPrimary.Show();
+    }
+
+    Task OnMarkdownValueChanged(string value)
+    {
+        note.MarkdownValue = value;
+
+        return Task.CompletedTask;
+    }
+
+    private Task CancelModal()
+    {
+        return modalRef.Hide();
+    }
+}
