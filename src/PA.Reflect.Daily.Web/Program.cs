@@ -42,9 +42,9 @@ builder.Services
 
 builder.Services.AddAuth0WebAppAuthentication(options =>
 {
-  options.Domain = "";
-  options.ClientId = "";
-  options.ClientSecret = "";
+  options.Domain = Environment.GetEnvironmentVariable("AUTH0_DOMAIN") ?? "";
+  options.ClientId = Environment.GetEnvironmentVariable("AUTH0_CLIENT_ID") ?? "";
+  options.ClientSecret = Environment.GetEnvironmentVariable("AUTH0_CLIENT_SECRET") ?? "";
   options.ResponseType = "code";
 });
 
