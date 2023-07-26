@@ -4,6 +4,7 @@
 @using PA.Reflect.Daily.Web.Interfaces;
 @inherits LayoutComponentBase
 @inject IUserService UserService
+@attribute [Authorize]
 
 <PageTitle>Reflect daily</PageTitle>
 
@@ -41,6 +42,13 @@
 
     protected override async Task OnInitializedAsync()
     {
-        User = await UserService.GetCurrentUserAsync();
+        try
+        {
+            User = await UserService.GetCurrentUserAsync();
+        }
+        catch (Exception)
+        {
+            
+        }
     }
 }
