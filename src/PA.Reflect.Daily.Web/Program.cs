@@ -13,6 +13,7 @@ using Blazorise.Icons.FontAwesome;
 using Blazorise.Bootstrap;
 using PA.Reflect.Daily.ServiceLayer.Interfaces;
 using PA.Reflect.Daily.ServiceLayer.Services;
+using Blazored.LocalStorage;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,6 +35,8 @@ builder.Services.AddServerSideBlazor();
 
 builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<IReflectionService, ReflectionService>();
+
+builder.Services.AddBlazoredLocalStorage();
 
 builder.Services
   .AddBlazorise()

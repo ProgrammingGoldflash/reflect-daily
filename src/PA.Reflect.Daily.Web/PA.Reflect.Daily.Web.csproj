@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Auth0.AspNetCore.Authentication" />
+    <PackageReference Include="Blazored.LocalStorage" />
     <PackageReference Include="Blazorise.Bootstrap" />
     <PackageReference Include="Blazorise.Icons.FontAwesome" />
     <PackageReference Include="Blazorise.Markdown" />

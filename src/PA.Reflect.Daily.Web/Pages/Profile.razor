@@ -1,0 +1,18 @@
+﻿@page "/profile"
+@using Blazored.LocalStorage;
+
+<div class="lg:m-12 p-6 shadow-md rounded-lg flex flex-col items-center gap-4 justify-center w-full lg:w-2/4">
+
+    <div>
+        <Field>
+            <FieldLabel>Username</FieldLabel>
+            <TextEdit Text="@User.Username" ReadOnly="true" />
+        </Field>
+    </div>
+
+    <div>
+        <Check TValue="bool" @bind-Checked="@localOptions.UseSundayAsFirstDayOfWeek">Sunday as first day of week</Check>
+    </div>
+
+    <Button Color="Color.Primary" class="text-white" Clicked="@Save">Save</Button>
+</div>
