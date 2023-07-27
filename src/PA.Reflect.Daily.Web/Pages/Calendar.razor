@@ -41,7 +41,7 @@
                 <tr class="">
                     @for (int day = 0; day < 7; day++)
                     {
-                        var date = startOfMonth.AddDays((week * 7) + day - ((int)startOfMonth.DayOfWeek - (int)DayOfWeek.Sunday));
+                        var date = startOfMonth.AddDays((week * 7) + day - ((int)startOfMonth.DayOfWeek - (int)days.First()));
                         var isCurrentWeek = GetWeekOfYear(date) == GetWeekOfYear(DateTime.Today) && date.Year == DateTime.Today.Year;
                         var isToday = date.Date == DateTime.Today;
 
