@@ -1,0 +1,49 @@
+h1 {
+    font-size: 2em !important;
+    margin: 0.67em 0 !important;
+    font-weight: bold !important;
+}
+
+h2 {
+    font-size: 1.5em !important;
+    margin: 0.67em 0 !important;
+    font-weight: bold !important;
+}
+
+h3 {
+    font-size: 1.17em !important;
+    margin: 0.67em 0 !important;
+    font-weight: bold !important;
+}
+
+h4 {
+    font-size: 1em !important;
+    margin: 0.67em 0 !important;
+    font-weight: bold !important;
+}
+
+h5 {
+    font-size: 0.83em !important;
+    margin: 0.67em 0 !important;
+    font-weight: bold !important;
+}
+
+h6 {
+    font-size: 0.67em !important;
+    margin: 0.67em 0 !important;
+    font-weight: bold !important;
+}
+
+ul {
+    list-style-type: disc !important;
+    padding-left: 40px !important;
+}
+
+ol {
+    list-style-type: decimal !important;
+    padding-left: 40px !important;
+}
+
+li {
+    margin: 1em 0 !important;
+}
